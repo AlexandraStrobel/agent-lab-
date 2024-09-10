@@ -108,3 +108,15 @@ class OrderResponse(BaseModel):
 class DeleteOrderResponse(BaseModel):
     message: str
     status: str
+
+class Bowl(BaseModel):
+    name: str
+    price: float
+    ingredients: List[str]
+    label: str
+
+
+class Riceupmenu(BaseModel):
+    day: str
+    bowls: List[Bowl]
+    

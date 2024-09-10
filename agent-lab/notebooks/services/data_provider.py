@@ -15,6 +15,8 @@ from .data_types import (
     Dish,
     Order,
     DeleteOrderResponse,
+    Bowl,
+    Riceupmenu
 )
 
 days_of_week = [
@@ -25,6 +27,7 @@ days_of_week = [
     "Friday",
     "Saturday",
     "Sunday",
+
 ]
 
 
@@ -86,6 +89,31 @@ class DataProvider:
                 try:
                     cursor.execute(
                         "INSERT INTO menu (day, menu) VALUES (?,?)",
+                        (day, menu),
+                    )
+
+                except Exception as e:
+                    print(f"Error: {e}")
+        self._conn.commit()
+        cursor.close()
+
+    def create_riceup_menu(self):
+        days_of_week = ["Monday", "Tuesday", "Wednesday", "Thuresday", "Friday", "Saturday", "Sunday"]
+        cursor = self._conn.cursor()
+        cursor.execute("DROP TABLE IF EXISTS riceup_menu")
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS riceup_menu (id INTEGER PRIMARY KEY AUTOINCREMENT, day TEXT, menu TEXT)"
+        )
+
+        for day in days_of_week:
+            json_file = os.path.join(
+                self._current_path, "data/Riceupmenu", f"{day.lower()}.json"
+            )
+            with open(json_file, "r") as file:
+                menu = file.read()
+                try:
+                    cursor.execute(
+                        "INSERT INTO riceup_menu (day, menu) VALUES (?,?)",
                         (day, menu),
                     )
 
@@ -278,6 +306,28 @@ class DataProvider:
             )
             for row in rows
         ]
+    
+    def get_all_orders(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        query = "SELECT * FROM orders"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        if not rows:
+            return []
+        cursor.close()
+        conn.close()
+        return [
+            Order(
+                id=f"{row[0]:04}",
+                user_id=row[1],
+                date=row[2],
+                total=float(row[3]),
+                detail=row[4],
+                status=row[5],
+                )
+            for row in rows
+        ]
 
     # Get a specific order
     def get_order(self, user_id: str, order_id: str, status: str) -> Order:
@@ -339,3 +389,23 @@ class DataProvider:
         )
         conn.commit()
         cursor.close()
+
+    def get_riceupmenu(self, day: str) -> Menu:
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        query = "SELECT * FROM riceup_menu where day = ?"
+        cursor.execute(query, (day,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        cursor.close()
+        conn.close()
+        if not row or row[2] == "{}":
+            return Riceupmenu(day=day, bowls =[])
+
+        menu = json.loads(row[2])
+        return Riceupmenu(
+            day=row[1],
+            bowls=[Bowl(**item) for item in menu["bowl"]],
+        )
+    
