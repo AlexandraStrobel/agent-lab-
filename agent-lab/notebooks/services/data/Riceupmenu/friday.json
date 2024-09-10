@@ -1,0 +1,23 @@
+{
+
+    "bowl": [
+      {
+        "name": "Rainbow Bowl",
+        "price": 18.99,
+        "ingredients": ["rice", "avocado", "salmon", "mango"],
+        "label": ""
+      },
+      {
+        "name": "Sunshine Bowl",
+        "price": 18.99,
+        "ingredients": ["yellow rice", "pineapple", "tofu", "mango"],
+        "label": ""
+      },
+      {
+        "name": "Falafel Bowl",
+        "price": 18.99,
+        "ingredients": ["red rice", "falafel", "edamame", "cucumber"],
+        "label": ""
+      }
+    ]
+}
